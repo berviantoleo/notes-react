@@ -1,0 +1,84 @@
+:root {
+  --font-color: #333;
+  --primary-color: hsl(171, 100%, 41%);
+  --card-background-color: #fff;
+  --background-color: #eee;
+}
+
+[data-theme='dark'] {
+  --font-color: rgb(255, 255, 255);
+  --primary-color: hsl(171, 62%, 19%);
+  --card-background-color: rgb(46, 39, 39);
+  --background-color: #333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: background 0.3s ease-in;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: var(--background-color);
+  color: var(--font-color);
+}
+
+.box {
+  background-color: var(--card-background-color);
+  color: var(--font-color);
+}
+
+.card {
+  background-color: var(--card-background-color);
+  color: var(--font-color);
+}
+
+.card-content {
+  background-color: var(--card-background-color);
+  color: var(--font-color);
+}
+
+.card-header-title {
+  background-color: var(--card-background-color);
+  color: var(--font-color);
+}
+
+.label {
+  background-color: var(--card-background-color);
+  color: var(--font-color);
+}
+
+.content > h1 {
+  color: var(--font-color);
+}
+
+.content > h2 {
+  color: var(--font-color);
+}
+
+.content a > h2 {
+  color: var(--font-color);
+}
+
+.title {
+  color: var(--font-color);
+}
+
+.navbar-brand > .navbar-item {
+  background-color: var(--primary-color);
+  color: var(--font-color);
+}
+
+.navbar-menu {
+  background-color: var(--primary-color);
+}
+
+.button .is-primary {
+  background-color: var(--primary-color);
+}
+
+.navbar .is-primary .navbar-brand > .navbar-item {
+  color: var(--font-color);
+}

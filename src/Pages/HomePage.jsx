@@ -1,7 +1,7 @@
 import NoteListPageWrapper from './NoteListPage';
 
 function HomePage() {
-  return <NoteListPageWrapper isArchived={false} />;
+  return <NoteListPageWrapper />;
 }
 
 export default HomePage;

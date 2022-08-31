@@ -8,7 +8,8 @@ import {
   deleteNote,
   getNotesByArchived,
   unarchiveNote,
-} from '../utils/local-data';
+} from '../utils/network-data';
+import Loading from '../components/Loading';
 
 function NoteListPageWrapper({ isArchived }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,20 +32,27 @@ class NoteListPage extends React.Component {
     super(props);
 
     this.state = {
-      notes: getNotesByArchived(props.isArchived),
+      notes: [],
       keyword: props.defaultKeyword || '',
+      isLoading: true,
     };
     this.onDeleteHandler = this.onDeleteHandler.bind(this);
     this.onArchiveHandler = this.onArchiveHandler.bind(this);
     this.onKeywordChangeHandler = this.onKeywordChangeHandler.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
+  async componentDidMount() {
+    const { data: notes } = await getNotesByArchived(this.props.isArchived);
+    this.setState({ notes, isLoading: false });
+  }
+
+  async componentDidUpdate(prevProps) {
     if (prevProps.isArchived !== this.props.isArchived) {
+      const { data: notes } = await getNotesByArchived(this.props.isArchived);
       // update the notes based on updated isArchiveds
       this.setState(() => {
         return {
-          notes: getNotesByArchived(this.props.isArchived),
+          notes,
         };
       });
     }
@@ -57,18 +65,20 @@ class NoteListPage extends React.Component {
     }
   }
 
-  onArchiveHandler(id, isArchivedNote) {
-    if (isArchivedNote) {
-      unarchiveNote(id);
-    } else {
-      archiveNote(id);
+  async onArchiveHandler(id, isArchivedNote) {
+    const { error } = await (isArchivedNote
+      ? unarchiveNote(id)
+      : archiveNote(id));
+    if (!error) {
+      const { error, data: notes } = await getNotesByArchived(
+        this.props.isArchived
+      );
+      if (!error) {
+        this.setState(() => {
+          return { notes };
+        });
+      }
     }
-
-    this.setState(() => {
-      return {
-        notes: getNotesByArchived(this.props.isArchived),
-      };
-    });
   }
 
   onKeywordChangeHandler(keyword) {
@@ -81,18 +91,25 @@ class NoteListPage extends React.Component {
     this.props.keywordChange(keyword);
   }
 
-  onDeleteHandler(id) {
-    deleteNote(id);
+  async onDeleteHandler(id) {
+    const { error } = await deleteNote(id);
 
-    // update the notes state from data.js
-    this.setState(() => {
-      return {
-        notes: getNotesByArchived(this.props.isArchived),
-      };
-    });
+    if (!error) {
+      const { error, data: notes } = await getNotesByArchived(
+        this.props.isArchived
+      );
+      if (!error) {
+        this.setState(() => {
+          return { notes };
+        });
+      }
+    }
   }
 
   render() {
+    if (this.state.isLoading) {
+      return <Loading />;
+    }
     const notes = this.state.notes.filter((note) => {
       const keywordLowerCase = this.state.keyword.toLowerCase();
       return (
@@ -121,12 +138,12 @@ class NoteListPage extends React.Component {
 
 NoteListPage.propTypes = {
   defaultKeyword: PropTypes.string,
-  isArchived: PropTypes.bool.isRequired,
+  isArchived: PropTypes.bool,
   keywordChange: PropTypes.func.isRequired,
 };
 
 NoteListPageWrapper.propTypes = {
-  isArchived: PropTypes.bool.isRequired,
+  isArchived: PropTypes.bool,
 };
 
 export default NoteListPageWrapper;
