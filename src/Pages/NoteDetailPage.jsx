@@ -7,8 +7,9 @@ import {
   deleteNote,
   unarchiveNote,
   archiveNote,
-} from '../utils/local-data';
+} from '../utils/network-data';
 import NoteDetailEmpty from '../components/NoteDetailEmpty';
+import Loading from '../components/Loading';
 
 function NoteDetailPageWrapper() {
   const { id } = useParams();
@@ -21,31 +22,57 @@ class NoteDetailPage extends React.Component {
     super(props);
 
     this.state = {
-      note: getNote(props.id),
+      note: null,
+      isLoading: true,
     };
     this.onDeleteHandler = this.onDeleteHandler.bind(this);
     this.onArchiveHandler = this.onArchiveHandler.bind(this);
   }
 
-  onDeleteHandler(id) {
-    deleteNote(id);
-    this.props.navigate('/');
+  async componentDidMount() {
+    const { error, data: note } = await getNote(this.props.id);
+    if (!error) {
+      this.setState(() => {
+        return {
+          note,
+          isLoading: false,
+        };
+      });
+    } else {
+      this.setState(() => {
+        return {
+          isLoading: false,
+        };
+      });
+    }
   }
 
-  onArchiveHandler(id, archived) {
-    if (archived) {
-      unarchiveNote(id);
-    } else {
-      archiveNote(id);
+  async onDeleteHandler(id) {
+    const { error } = await deleteNote(id);
+    if (!error) {
+      this.props.navigate('/');
     }
-    this.setState(() => {
-      return {
-        note: getNote(this.props.id),
-      };
-    });
+  }
+
+  async onArchiveHandler(id, archived) {
+    const { error } = await (archived ? unarchiveNote(id) : archiveNote(id));
+    if (!error) {
+      const { error, data: note } = await getNote(this.props.id);
+      if (!error) {
+        this.setState(() => {
+          return {
+            note,
+          };
+        });
+      }
+    }
   }
 
   render() {
+    if (this.state.isLoading) {
+      return <Loading />;
+    }
+
     if (!this.state.note) {
       return <NoteDetailEmpty />;
     }
